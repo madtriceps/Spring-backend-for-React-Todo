@@ -6,6 +6,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -44,6 +45,11 @@ public class JwtSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+
+    	//The below two lines were added when we made our h2-database . These two allow us to access h2cosole  
+    	httpSecurity.csrf().disable();
+        httpSecurity.headers().frameOptions().disable();
+        
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable) // (1)
                 .sessionManagement(
@@ -56,6 +62,9 @@ public class JwtSecurityConfig {
                                 .permitAll()
                                 .antMatchers(HttpMethod.OPTIONS,"/**")
                                 .permitAll()
+                                .antMatchers("/h2console/**")
+                                .permitAll()
+//                                .requestMatchers(PathRequest.toH2Console()).permitAll()
                                 .anyRequest()
                                 .authenticated()) // (3)
                 .oauth2ResourceServer(
@@ -68,6 +77,7 @@ public class JwtSecurityConfig {
                                 new BearerTokenAccessDeniedHandler()))
                 .httpBasic(
                         Customizer.withDefaults()) // (5)
+                
                 .build();
     }
 
